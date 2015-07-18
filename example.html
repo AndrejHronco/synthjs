@@ -6,28 +6,68 @@
   <script type="text/javascript" src="synth.js"></script>
   <script type="text/javascript">
     var context = new (window.AudioContext || window.webkitAudioContext)();
-    var loop;
-
+    var kickGain = context.createGain(), snareGain = context.createGain(), hiHatGain = context.createGain();
+    var loop; 
+    
     function initLoop() {
-      var drum = context.createDrum(45, 0.001, 0.1, 0, 0.5); // set freq, a, d, s, r
-      drum.connect(context.destination);
+      var kLevel = document.querySelector('.kl'), sLevel = document.querySelector('.sl'), hLevel = document.querySelector('.hl');
 
-      var hihat = context.createHiHat(3000, 0.5, 0.25, 0.1, 0.1); // set freq, a, d, s, r
-      hihat.connect(context.destination);
+      var feedbackDelay = context.createFeedbackDelay(0.25, 0.1); // delay, feedback
+
+      var reverb = context.createReverb(1.75, {decay: 5, revers: true}); // length, {decay, reverse}
+
+      var kick = context.createDrum(35, 0.001, 0.1, 0, 0.5); // freq, a, d, s, r
+
+      var hihat = context.createHiHat(4500, 0.5, 0.25, 0.1, 0.25); // freq, a, d, s, r
+
+      var snare = context.createHiHat(2500, 0.05, 0.25, 0.1, 0.05); // freq, a, d, s, r
+      
+
+      // connections
+
+      kick.connect(kickGain);
+      hihat.connect(hiHatGain);
+      snare.connect(snareGain);
+
+      feedbackDelay.connect(kickGain);
+      reverb.connect(context.destination);
+
+      kickGain.connect(context.destination);
+      snareGain.connect(context.destination);
+      hiHatGain.connect(context.destination);
+
+      // mixer
+      kickGain.gain.value = 0.75;
+      snareGain.gain.value = 0.05;
+      hiHatGain.gain.value = 0.5;
+
+      kLevel.oninput = function(){
+        kickGain.gain.value = kLevel.value;
+      }
+
+      sLevel.oninput = function(){
+        snareGain.gain.value = sLevel.value;
+      }
+
+      hLevel.oninput = function(){
+        hiHatGain.gain.value = hLevel.value;
+      }
 
       loop = new Loop();
 
       loop.setInstruments({
-        drum:drum,
-        hihat:hihat
+        kick:kick,
+        hihat:hihat,
+        snare:snare
       });
 
       loop.setBPM(120);
       loop.setBeatUnit(1 / 16);
 
       loop.setSequences({
-        drum: '*   *   *   *   *   *   *  *****',
-        hihat: '  * '
+        kick:  '*...*...*...*...*...*...*...**.*',
+        snare: '..*...*...*...*...*...*...*...*.',
+        hihat: '*...*...*.......*...*...*......*'
       });
 
       loop.onPlay = function(track, position){
@@ -46,7 +86,7 @@
     function wrapInSpans(text){
       text = text.split('').join('</span><span>');
       var result = '<span>'+text+'</span>';
-      result.replace(' ', '&nbsp;');
+      result.replace(' ', '.');
       return result;
     }
 
@@ -118,17 +158,54 @@
       text-shadow: 0px 0px 10px blue;
       color: blue;
     }
+    /* controls */
+    .controls {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .mixer {
+
+    }
+    label {}
+    input[type=range] {
+      display: block;
+      margin: 0 auto;
+    }
+    .sequenceContainer {
+      margin-bottom: 10px;
+    }
+    .sequenceContainer span {
+      /*margin-right: 2px; */
+      /*display: inline-block;*/
+    }
+    .sequenceBackground span, .sequence span {
+      background-color: #efefef;
+      border-bottom: 2px solid #ddd;
+    }
+
   </style>
 </head>
 <body>
 <div class='center'>
   <div class='sequenceContainer'>
-    <div class='sequenceBackground' data-sequence='drum'></div>
-    <div class='sequence' data-sequence='drum' type='text' contenteditable='true'></div>
+    <div class='sequenceBackground' data-sequence='kick'></div>
+    <div class='sequence' data-sequence='kick' type='text' contenteditable='true'></div>
+  </div>
+  <div class='sequenceContainer'>
+    <div class='sequenceBackground' data-sequence='snare'></div>
+    <div class='sequence' data-sequence='snare' type='text' contenteditable='true'></div>
   </div>
   <div class='sequenceContainer'>
     <div class='sequenceBackground' data-sequence='hihat'></div>
     <div class='sequence' data-sequence='hihat' type='text' contenteditable='true'></div>
+  </div>
+  <div class="controls">
+    <div class="mixer">
+      <label for="k">kick<input class='kl' type="range" name="k" min="0" max="1" step="0.05" value="0.75"></label>
+      <label for="s">snare<input class='sl' type="range" name="s" min="0" max="1" step="0.05" value="0.05"></label>
+      <label for="h">hihat<input class='hl' type="range" name="h" min="0" max="1" step="0.05" value="0.5"></label>
+    </div>
   </div>
 </div>
 

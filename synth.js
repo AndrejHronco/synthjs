@@ -71,7 +71,7 @@
 
   /* ReverbNode */
 
-  function ReverbNodeFactory(context, seconds, options){
+  function ReverbFactory(context, seconds, options){
     options = options || {};
     var sampleRate = context.sampleRate;
     var length = sampleRate * seconds;
@@ -80,7 +80,7 @@
     var impulseR = impulse.getChannelData(1);
     var decay = options.decay || 2;
     for (var i = 0; i < length; i++){
-      var n = options.reverse ? length - i : i;
+      var n = (options.reverse) ? length - i : i;
       impulseL[i] = (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
       impulseR[i] = (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
     }
@@ -92,13 +92,13 @@
   AudioContext.prototype.createNoiseGen = function(stereo, bufSize){ return NoiseGenFactory(this, stereo, bufSize); };
   AudioContext.prototype.createEnvelope = function(a, s, d, r){ return EnvelopeFactory(this, a, s, d, r); };
   AudioContext.prototype.createFeedbackDelay = function(delay, feedback){ return FeedbackDelayFactory(this, delay, feedback); };
-  AudioContext.prototype.createReverbNode = function(seconds, options){ return ReverbNodeFactory(this, seconds, options); };
+  AudioContext.prototype.createReverb = function(seconds, options){ return ReverbFactory(this, seconds, options); };
 
   /** INSTRUMENTS **/
 
   function Drum(context, freq, a, d, s, r){
     this.osc = context.createOscillator();
-    this.osc.frequency.value = 45;
+    this.osc.frequency.value = freq;
     this.osc.type = 'sine';
     var env = this.env = context.createEnvelope(a, d, s, r);
     this.osc.start(0); // this was missing
