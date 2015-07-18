@@ -4,7 +4,7 @@
 
   function NoiseGenFactory(context, stereo, bufSize){
     bufSize = bufSize || 4096;
-    var node = context.createJavaScriptNode(bufSize, 1, 2);
+    var node = context.createScriptProcessor(bufSize, 1, 2);
     node.onaudioprocess = function(e){
       var outBufferL = e.outputBuffer.getChannelData(0);
       var outBufferR = e.outputBuffer.getChannelData(1);
@@ -48,7 +48,7 @@
   }
 
   function EnvelopeFactory(context, a, d, s, r){
-    var gain = context.createGainNode();
+    var gain = context.createGain();
     EnvelopeNode.call(gain, a, d, s, r);
     return gain;
   }
@@ -57,14 +57,14 @@
 
   function FeedbackDelayNode(context, delay, feedback){
     this.delayTime.value = delay;
-    this.gainNode = context.createGainNode();
+    this.gainNode = context.createGain();
     this.gainNode.gain.value = feedback;
     this.connect(this.gainNode);
     this.gainNode.connect(this);
   }
 
   function FeedbackDelayFactory(context, delayTime, feedback){
-    var delay = context.createDelayNode(delayTime + 1);
+    var delay = context.createDelay(delayTime + 1);
     FeedbackDelayNode.call(delay, context, delayTime, feedback);
     return delay;
   }
@@ -96,12 +96,13 @@
 
   /** INSTRUMENTS **/
 
-  function Drum(context){
-    var osc = this.osc = context.createOscillator();
-    osc.frequency.value = 45;
-    osc.type = osc.SINE;
-    var env = this.env = context.createEnvelope(0.001, 0.1, 0, 0.5);
-    osc.connect(env);
+  function Drum(context, freq, a, d, s, r){
+    this.osc = context.createOscillator();
+    this.osc.frequency.value = 45;
+    this.osc.type = 'sine';
+    var env = this.env = context.createEnvelope(a, d, s, r);
+    this.osc.start(0); // this was missing
+    this.osc.connect(this.env);
   }
 
   Drum.prototype.trigger = function(){
@@ -111,13 +112,14 @@
     this.env.connect(dest);
   }
 
-  function HiHat(context){
+  function HiHat(context, freq, a, d, s, r){
+    this.freq = freq;
     this.noiseGen = context.createNoiseGen();
     this.filter = context.createBiquadFilter();
-    this.filter.type = this.filter.HIGHPASS;
-    this.filter.frequency.value = 5000;
+    this.filter.type = 'highpass';
+    this.filter.frequency.value = this.freq;
     this.noiseGen.connect(this.filter);
-    this.env = context.createEnvelope(0.001, 0.05, 0, 0.2);
+    this.env = context.createEnvelope(a, d, s, r);
     this.filter.connect(this.env);
   }
 
@@ -128,8 +130,8 @@
     this.env.connect(dest);
   }
 
-  AudioContext.prototype.createDrum = function(){ return new Drum(this); };
-  AudioContext.prototype.createHiHat = function(){ return new HiHat(this); };
+  AudioContext.prototype.createDrum = function(freq, a, d, s, r){ return new Drum(this, freq, a, d, s, r); };
+  AudioContext.prototype.createHiHat = function(freq, a, d, s, r){ return new HiHat(this, freq, a, d, s, r); };
 
   /** LOOP **/
 
