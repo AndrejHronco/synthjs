@@ -5,9 +5,9 @@
   <script type='text/javascript' src='https://code.jquery.com/jquery-2.1.4.min.js'></script>
   <script type="text/javascript" src="synth.js"></script>
   <script type="text/javascript">
-    var context = new (window.AudioContext || window.webkitAudioContext)();
-    var kickGain = context.createGain(), snareGain = context.createGain(), hiHatGain = context.createGain();
-    var loop; 
+    var context = new (window.AudioContext || window.webkitAudioContext)(),
+        kickGain = context.createGain(), snareGain = context.createGain(), hiHatGain = context.createGain(),
+        loop; 
     
     function initLoop() {
       var kLevel = document.querySelector('.kl'), sLevel = document.querySelector('.sl'), hLevel = document.querySelector('.hl');
