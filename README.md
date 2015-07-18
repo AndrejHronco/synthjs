@@ -1,4 +1,4 @@
-SynthJS v0.2.0-alpha
+SynthJS v0.3.0-alpha
 ===================
 
 This is a utility script that extends the Web Audio API context with a number of common synth and DSP nodes. So far this consists of:
