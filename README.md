@@ -12,18 +12,18 @@ This is a utility script that extends the Web Audio API context with a number of
 
 This is a work in progress.
 
-Note: Requires a browser that supports the webkit Web Audio API (see: [http://caniuse.com/audio-api](http://caniuse.com/audio-api)).
+Note: Requires a browser that supports the Web Audio API (see: [http://caniuse.com/audio-api](http://caniuse.com/audio-api)).
 
 Examples
 --------
 
 A square wave "ping" with delay.
 
-    var context = new webkitAudioContext();
+    var context = new AudioContext();
 
     //square wave at 440 Hz (default)
     var osc = context.createOscillator();
-    osc.type = osc.SQUARE;
+    osc.type = 'square';
 
     //envelope with 0.001 sec attack and 0.5 sec decay
     var envelope = context.createEnvelope(0.001, 0.5, 0, 0);
